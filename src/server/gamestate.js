@@ -37,16 +37,16 @@ class Gamestate {
 	//
 	placeEntity(entity, position) {
 		this.map[position] = entity;
-		// TODO expand for multitile
+		// TODO expand for multitile (one day)
 	};
 
 	removeEntity(entity) {
-		for (const pos of this.entityPositions(entity)) {
+		for (const pos of this.entityPositions(entity)) { // This is parity for eventual multitile entities.
 			delete this.map[pos];
 		};
 	};
-	removePos(pos){
-		this.removeEntity(this.map[pos]);
+	remove(pos){
+		return this.removeEntity(this.map[pos]);
 	};
 
 	// teleport without place check
@@ -54,8 +54,16 @@ class Gamestate {
 		this.removeEntity(entity);
 		this.placeEntity(entity, dest);
 	};
-	tpPos(ori, dest){
-		this.tpEntity(this.map[ori], dest);
+	tp(ori, dest){
+		return this.tpEntity(this.map[ori], dest);
+	};
+
+	// stats
+	statEntity(entity, key, value){
+		return entity[key] = value;
+	};
+	stat(pos, key, value){
+		return this.statEntity(this.map[pos], key, value);
 	};
 };
 
