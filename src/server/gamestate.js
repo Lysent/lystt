@@ -45,7 +45,7 @@ class Gamestate {
 			delete this.map[pos];
 		};
 	};
-	remove(pos){
+	remove(pos) {
 		return this.removeEntity(this.map[pos]);
 	};
 
@@ -54,16 +54,22 @@ class Gamestate {
 		this.removeEntity(entity);
 		this.placeEntity(entity, dest);
 	};
-	tp(ori, dest){
+	tp(ori, dest) {
 		return this.tpEntity(this.map[ori], dest);
 	};
 
 	// stats
-	statEntity(entity, key, value){
+	setstatEntity(entity, key, value) {
 		return entity[key] = value;
 	};
-	stat(pos, key, value){
-		return this.statEntity(this.map[pos], key, value);
+	setstat(pos, key, value) {
+		return this.setstatEntity(this.map[pos], key, value);
+	};
+	mutstatEntity(entity, key, amount) {
+		return this.setstatEntity(entity, key, entity[key] + amount);
+	};
+	mutstat(pos, key, amount) {
+		return this.mutstatEntity(this.map[pos], key, amount);
 	};
 };
 
