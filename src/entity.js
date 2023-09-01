@@ -17,7 +17,7 @@ class Entity {
 
 	// range
 	range = 1
-	rangeMax = -1
+	rangeMax = -1 // no cap
 	rangeSelf = 1
 	rangeSelfCost = [1, "AP"] // like in the prototype, but is kinda broken
 	// this would replace the above for scaling costs
