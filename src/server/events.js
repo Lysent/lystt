@@ -51,7 +51,6 @@ class Events {
 	actEntity(entity, statkey, entity2 = null) {
 		statkey = String(statkey); // sanitize a bit
 
-		//this._actLegalise(entity, statkey);
 		const stat = entity[statkey] || 0;
 		const statMax = entity[statkey + "Max"] || 0;
 		const statAct = entity[statkey + "Act"] || 0;
