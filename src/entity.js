@@ -24,7 +24,7 @@ class Entity {
 	// get rangeSelfCost() {
 	//     return (this.range * 8 - 8)
 	// }
-	rangeAct = 0 // don't upgrade other's health, duh
+	rangeAct = 0 // don't upgrade other's range, duh
 	rangeActCost = [0, "AP"]
 
 	// if you know what you're doing,
