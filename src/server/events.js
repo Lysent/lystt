@@ -48,9 +48,18 @@ class Events {
 	//
 	// Act
 	//
+	_actLegalise(e, k) {
+		e[k] || (e[k] = 0);
+		e[k + "Max"] || (e[k + "Max"] = -1);
+		e[k + "Act"] || (e[k + "Act"] = 0);
+		e[k + "ActCost"] || (e[k + "ActCost"] = [0, ""]);
+		e[k + "Self"] || (e[k + "Self"] = 0);
+		e[k + "SelfCost"] || (e[k + "SelfCost"] = [0, ""]);
+	};
 	actEntity(entity, statkey, entity2 = null) {
 		statkey = String(statkey); // sanitize a bit
 
+		this._actLegalise(entity, statkey);
 		const stat = entity[statkey];
 		const statMax = entity[statkey + "Max"];
 		const statAct = entity[statkey + "Act"];
