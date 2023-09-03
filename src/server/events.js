@@ -56,23 +56,25 @@ class Events {
 		const statMax = entity[statkey + "Max"] || 0;
 		const statAct = entity[statkey + "Act"] || 0;
 		const statActCost = entity[statkey + "ActCost"] || 0;
+		const statActRange = entity[statkey + "ActRange"] || entity.range || 0;
 		const statSelf = entity[statkey + "Self"] || 0;
 		const statSelfCost = entity[statkey + "SelfCost"] || 0;
 
-		const status = canAct(entity, { statkey, stat, statMax, statAct, statActCost, statSelf, statSelfCost }, entity2);
+		const status = canAct.call(this, entity, { statkey, stat, statMax, statAct, statActCost, statActRange, statSelf, statSelfCost }, entity2);
 
 		if (status.code >= 0) return status.code;
 		switch (status.code) {
 			case -1: // Act success 1: modified self
 				this.gs.mutstatEntity(entity, statkey, status.data.delta);
 				this.gs.mutstatEntity(entity, statSelfCost[1], -status.data.cost);
-				return -1;
+				break;
 
 			case -2: // Act success 2: modified target
 				this.gs.mutstatEntity(entity2, statkey, status.data.delta);
 				this.gs.mutstatEntity(entity, statActCost[1], -status.data.cost);
-				return -2;
+				break;
 		};
+		return status.code;
 	};
 	act(pos, statkey, target = null) {
 		return this.actEntity(this.gs.map[pos], statkey, target === null ? null : this.gs.map[target]);

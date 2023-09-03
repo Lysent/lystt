@@ -1,8 +1,14 @@
-import { clamp } from "./utils.js";
+import { clamp, inSquare } from "./utils.js";
 
-function canAct(entity, { statkey, stat, statMax, statAct, statActCost, statSelf, statSelfCost }, entity2 = null) {
+function canAct(entity, { statkey, stat, statMax, statAct, statActCost, statActRange, statSelf, statSelfCost }, entity2 = null) {
 
 	if (statAct !== 0 && entity2 !== null) { // acting on another
+		if (!inSquare(
+			this.gs.entityPositions(entity)[0],
+			this.gs.entityPositions(entity2)[0],
+			statActRange
+		)) return { code: 4 }; // ERROR 4: Not in range
+
 		const cost = statActCost === 0 ? 0 : statActCost[0];
 
 		if (entity2[statkey] === undefined) return { code: 2 }; // ERROR 2: Trying to act on undefined stat
