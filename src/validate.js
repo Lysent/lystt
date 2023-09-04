@@ -42,15 +42,36 @@ function canAct(entity, { statkey, stat, statMax, statAct, statActCost, statActR
 	return { code: 1 }; // ERROR 1: No action possible
 };
 
-function canMove(entity, end, maxsteps) {
-	const start = this.gs.entityPositions(entity)[0];
-	const queue = [{ pos: start, steps: 0 }];
-	const visited = new Set([start.toString()]);
+function canMove(entity, dest) {
+	if (entity === undefined) return { code: 6}; // ERROR 6: No entity
+	if (entity.static === true) return { code: 5 }; // ERROR 5: Entity not allowed to move (static)
+
+	const ori = this.gs.entityPositions(entity)[0];
+	const dist = Math.max(Math.abs(ori[0] - dest[0]), Math.abs(ori[1] - dest[1])); // square distance
+	const maxsteps = Math.floor(entity.AP / entity.moveCost); // amount of possible steps, based on available AP and movement cost
+
+	if (this.gs.tileOccupied(dest)) return { code: 1 }; // ERROR 1: Destination occupied
+	if (maxsteps <= dist) return { code: 2 }; // ERROR 2: Not enough AP
+	if (maxsteps >= 100) return { code: 3 }; // ERROR 3: Tried to move too far
+
+	// if it can teleport
+	if (entity.teleports === true && dist <= maxsteps) return {
+		code: -1, // Success 1: Can teleport
+		cost: dist * entity.moveCost
+	};
+
+	// pathfinding
+	const queue = [{ pos: ori, steps: 0 }];
+	const visited = new Set([ori.toString()]);
 
 	while (queue.length) {
 		const { pos, steps } = queue.shift();
 
-		if (pos[0] === end[0] && pos[1] === end[1]) return steps <= maxsteps ? { code: 0, steps } : { code: 1 };
+		if (pos[0] === dest[0] && pos[1] === dest[1]) {
+			return steps <= maxsteps
+				? { code: 0, cost: steps * entity.moveCost } // Success 0: Can move
+				: { code: 4 }; // ERROR 4: Path impossible in given steps
+		};
 
 		if (steps >= maxsteps) continue;
 		const directions = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
@@ -58,7 +79,7 @@ function canMove(entity, end, maxsteps) {
 		for (const [dx, dy] of directions) {
 			const newpos = [pos[0] + dx, pos[1] + dy];
 
-			if(this.gs.tileOccupied(newpos)) continue;
+			if (this.gs.tileOccupied(newpos)) continue;
 
 			const newPositionStr = newpos.toString();
 
@@ -68,7 +89,7 @@ function canMove(entity, end, maxsteps) {
 		};
 	};
 
-	return { code: 1 }; // ERROR 1: No.
+	return { code: 4 }; // ERROR 4: Path impossible in given steps
 };
 
 export { canAct, canMove };
