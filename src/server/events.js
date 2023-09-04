@@ -36,6 +36,8 @@ class Events {
 	// movement
 	//
 	moveEntity(entity, dest) {
+		if (entity.static === true) return 5; // ERROR 5: Entity not allowed to move
+
 		const pos = this.gs.entityPositions(entity)[0];
 		const dist = Math.max(Math.abs(pos[0] - dest[0]), Math.abs(pos[1] - dest[1])); // distance
 		const steps = Math.floor(entity.AP / entity.moveCost); // amount of possible steps, based on available AP and movement cost

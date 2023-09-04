@@ -3,7 +3,10 @@ class Entity {
 	AP = 0
 	APMax = -1 // no cap
 
+	// moving
 	moveCost = 1
+	teleports = false
+	static = false
 
 	// health
 	health = 3 // start with max health
