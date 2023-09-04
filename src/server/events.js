@@ -1,5 +1,4 @@
-import { clamp } from "../utils.js";
-import { canAct } from "../validate.js";
+import { canAct, canMove } from "../validate.js";
 
 class Events {
 	constructor(gamestate) {
@@ -37,10 +36,28 @@ class Events {
 	// movement
 	//
 	moveEntity(entity, dest) {
-		if (this.gs.tileOccupied(dest)) return 1;
+		const pos = this.gs.entityPositions(entity)[0];
+		const dist = Math.max(Math.abs(pos[0] - dest[0]), Math.abs(pos[1] - dest[1])); // distance
+		const steps = Math.floor(entity.AP / entity.moveCost); // amount of possible steps, based on available AP and movement cost
 
+		if (this.gs.tileOccupied(dest)) return 1; // ERROR 1: Destination occupied
+		if (steps <= dist) return 2; // ERROR 2: Not enough AP
+		if (steps >= 100) return 3; // ERROR 3: Tried to move too far
+
+		// if it can teleport
+		if (entity.teleports === true && dist <= steps) {
+			this.gs.mutstatEntity(entity, -1 * dist * entity.moveCost);
+			this.gs.tpEntity(entity, dest);
+			return -1; // Success 1: Teleported
+		};
+
+		// pathfinding
+		const status = canMove.call(this, entity, dest, steps);
+		if (status.code > 0) return 4; // ERROR 4: Path impossible
+
+		this.gs.mutstatEntity(entity, "AP", -1 * status.steps * entity.moveCost);
 		this.gs.tpEntity(entity, dest);
-		return 0;
+		return 0; // Success 0: Moved
 	};
 	move(ori, dest) {
 		return this.moveEntity(this.gs.map[ori], dest);
