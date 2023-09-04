@@ -52,7 +52,7 @@ function canMove(entity, dest) {
 
 	if (this.gs.tileOccupied(dest)) return { code: 1 }; // ERROR 1: Destination occupied
 	if (maxsteps <= dist) return { code: 2 }; // ERROR 2: Not enough AP
-	if (maxsteps >= 100) return { code: 3 }; // ERROR 3: Tried to move too far
+	if (dist >= 100) return { code: 3 }; // ERROR 3: Tried to move too far
 
 	// if it can teleport
 	if (entity.teleports === true && dist <= maxsteps) return {
