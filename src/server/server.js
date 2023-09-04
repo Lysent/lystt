@@ -1,12 +1,15 @@
 import { Gamestate } from "./gamestate.js";
 import { Events } from "./events.js";
+import { NetworkServer } from "./networking.ts";
 
-const lystt = {
-	map: {},
-	initServer() {
-
-	}
+class LysT {
+	map = {};
+	constructor(){
+		this.gs = new Gamestate(this.map);
+		this.ev = new Events(this.gs);
+		this.net = new NetworkServer(3000);
+	};
 };
-lystt.gs = new Gamestate(lystt.map);
-lystt.ev = new Events(lystt.gs);
+
+const lystt = new LysT();
 window.lystt = lystt;
