@@ -5,7 +5,13 @@ class NetworkServer {
 	io: any;
 
 	constructor(port: number) {
-		this.io = new Server();
+		this.io = new Server({
+			cors: {
+				origin: "*:*",
+				methods: ["GET", "POST"],
+				credentials: true,
+			}
+		});
 		this.startServer(port);
 		this.setupSocketIO();
 	};
