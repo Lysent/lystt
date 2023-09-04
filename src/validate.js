@@ -42,4 +42,33 @@ function canAct(entity, { statkey, stat, statMax, statAct, statActCost, statActR
 	return { code: 1 }; // ERROR 1: No action possible
 };
 
-export { canAct };
+function canMove(entity, end, maxsteps) {
+	const start = this.gs.entityPositions(entity)[0];
+	const queue = [{ pos: start, steps: 0 }];
+	const visited = new Set([start.toString()]);
+
+	while (queue.length) {
+		const { pos, steps } = queue.shift();
+
+		if (pos[0] === end[0] && pos[1] === end[1]) return steps <= maxsteps ? { code: 0, steps } : { code: 1 };
+
+		if (steps >= maxsteps) continue;
+		const directions = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
+
+		for (const [dx, dy] of directions) {
+			const newpos = [pos[0] + dx, pos[1] + dy];
+
+			if(this.gs.tileOccupied(newpos)) continue;
+
+			const newPositionStr = newpos.toString();
+
+			if (visited.has(newPositionStr)) continue;
+			visited.add(newPositionStr);
+			queue.push({ pos: newpos, steps: steps + 1 });
+		};
+	};
+
+	return { code: 1 }; // ERROR 1: No.
+};
+
+export { canAct, canMove };
