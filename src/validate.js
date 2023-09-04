@@ -2,6 +2,9 @@ import { clamp, inSquare } from "./utils.js";
 
 function canAct(entity, { statkey, stat, statMax, statAct, statActCost, statActRange, statSelf, statSelfCost }, entity2 = null) {
 
+	// (disallow modifying non-number stats, like costs or procedures)
+	if (typeof stat !== 'number') return { code: 1 }; // ERROR 1: Not possible
+
 	if (statAct !== 0 && entity2 !== null) { // acting on another
 		if (!inSquare(
 			this.gs.entityPositions(entity)[0],
@@ -43,7 +46,7 @@ function canAct(entity, { statkey, stat, statMax, statAct, statActCost, statActR
 };
 
 function canMove(entity, dest) {
-	if (entity === undefined) return { code: 6}; // ERROR 6: No entity
+	if (entity === undefined) return { code: 6 }; // ERROR 6: No entity
 	if (entity.static === true) return { code: 5 }; // ERROR 5: Entity not allowed to move (static)
 
 	const ori = this.gs.entityPositions(entity)[0];
