@@ -4,7 +4,7 @@ import { NetworkClient } from "./networking.js";
 
 class LysTClient {
 	constructor(serverurl, { name, key }) {
-		this.gs = new GamestateClient({});
+		this.gs = new GamestateClient();
 		this.ev = new EventsClient(this.gs);
 		this.net = new NetworkClient(serverurl, {name, key});
 

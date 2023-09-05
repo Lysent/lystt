@@ -1,6 +1,7 @@
 class GamestateClient {
-	constructor(map) {
-		this.map = map;
+	map = {};
+	constructor() {
+
 	};
 
 	setMap(mapobj) {
