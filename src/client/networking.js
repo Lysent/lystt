@@ -13,7 +13,7 @@ class NetworkClient {
 			await this.authenticate(this.io);
 			console.log("Authenticated");
 		});
-	}
+	};
 
 	authenticate(socket) {
 		return new Promise((res, rej) => socket.emit("auth", this.creds, code => {
