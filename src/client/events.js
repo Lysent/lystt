@@ -1,5 +1,5 @@
-class EventsCLient {
+class EventsClient {
 
 };
 
-export { EventsCLient };
+export { EventsClient };
