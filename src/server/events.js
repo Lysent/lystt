@@ -73,14 +73,29 @@ class Events {
 			case -2: // Act success 2: modified target
 				this.gs.mutstatEntity(entity2, statkey, status.data.delta);
 				this.gs.mutstatEntity(entity, statActCost[1], -status.data.cost);
+
+				// handle possible death
+				if (entity2.health <= 0) this.deathHandler(entity2);
 				break;
 		};
+
+		// Probably never happen, but possible if action cost is health
+		if (entity.health <= 0) this.deathHandler(entity);
+
 		return status.code;
 	};
 	act(pos, statkey, target = null) {
 		return this.actEntity(this.gs.map[pos], statkey, target === null ? null : this.gs.map[target]);
 	};
 
+	//
+	// Legalizers
+	//
+	deathHandler(entity) {
+		// current basic death handling: straight up delete it
+		this.gs.removeEntity(entity);
+		// TODO: when procedures are added, remove dead entity procedures
+	};
 };
 
 export { Events };
