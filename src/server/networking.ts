@@ -41,14 +41,14 @@ class NetworkServer {
 					name: data.name,
 					key: buf2hex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(data.key)))
 				});
-				this.sendToAll("players", await this.makeClientPlayersList(this.players));
+				this.sendToAll(["players", await this.makeClientPlayersList(this.players)]);
 			});
 
 			socket.on("disconnect", async () => {
 				this.clients.delete(clientId);
 				this.players.delete(clientId);
 				console.log(`socket ${socket.id} disconnected`);
-				this.sendToAll("players", await this.makeClientPlayersList(this.players));
+				this.sendToAll(["players", await this.makeClientPlayersList(this.players)]);
 			});
 		});
 	};
@@ -63,14 +63,14 @@ class NetworkServer {
 		};
 	};
 
-	sendToAll(type: string, data: any) {
-		this.io.emit(type, data);
+	sendToAll(data: any) {
+		this.io.emit("data", data);
 	};
 
 	//
 	// Helpers
 	//
-	async makeClientPlayersList(players: Map<string, any>){
+	async makeClientPlayersList(players: Map<string, any>) {
 		const clean: object = new Object();
 
 		for await (const [connid, creds] of Array.from(players)) {
