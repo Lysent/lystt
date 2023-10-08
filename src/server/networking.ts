@@ -54,7 +54,7 @@ class NetworkServer {
 	};
 
 	//
-	// Useful stuff
+	// Sending
 	//
 	sendToClient(clientId: string, data: string) {
 		const socket = this.clients.get(clientId);
