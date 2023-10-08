@@ -1,8 +1,8 @@
 import { canAct, canMove } from "../validate.js";
 
 class Events {
-	constructor(gamestate) {
-		this.gs = gamestate;
+	constructor(state) {
+		this.state = state;
 	};
 
 	//
@@ -39,12 +39,12 @@ class Events {
 		const status = canMove.call(this, entity, dest);
 		if (status.code > 0) return status.code; // ERROR
 
-		this.gs.mutstatEntity(entity, "AP", -1 * status.cost);
-		this.gs.tpEntity(entity, dest);
+		this.state.mutstatEntity(entity, "AP", -1 * status.cost);
+		this.state.tpEntity(entity, dest);
 		return status.code; // Success
 	};
 	move(ori, dest) {
-		return this.moveEntity(this.gs.map[ori], dest);
+		return this.moveEntity(this.state.map[ori], dest);
 	};
 
 	//
@@ -66,13 +66,13 @@ class Events {
 		if (status.code >= 0) return status.code;
 		switch (status.code) {
 			case -1: // Act success 1: modified self
-				this.gs.mutstatEntity(entity, statkey, status.data.delta);
-				this.gs.mutstatEntity(entity, statSelfCost[1], -status.data.cost);
+				this.state.mutstatEntity(entity, statkey, status.data.delta);
+				this.state.mutstatEntity(entity, statSelfCost[1], -status.data.cost);
 				break;
 
 			case -2: // Act success 2: modified target
-				this.gs.mutstatEntity(entity2, statkey, status.data.delta);
-				this.gs.mutstatEntity(entity, statActCost[1], -status.data.cost);
+				this.state.mutstatEntity(entity2, statkey, status.data.delta);
+				this.state.mutstatEntity(entity, statActCost[1], -status.data.cost);
 
 				// handle possible death
 				if (entity2.health <= 0) this.deathHandler(entity2);
@@ -85,7 +85,7 @@ class Events {
 		return status.code;
 	};
 	act(pos, statkey, target = null) {
-		return this.actEntity(this.gs.map[pos], statkey, target === null ? null : this.gs.map[target]);
+		return this.actEntity(this.state.map[pos], statkey, target === null ? null : this.state.map[target]);
 	};
 
 	//
@@ -93,7 +93,7 @@ class Events {
 	//
 	deathHandler(entity) {
 		// current basic death handling: straight up delete it
-		this.gs.removeEntity(entity);
+		this.state.removeEntity(entity);
 		// TODO: when procedures are added, remove dead entity procedures
 	};
 };

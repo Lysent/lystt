@@ -1,4 +1,4 @@
-class Gamestate {
+class State {
 	constructor(map) {
 		this.map = map;
 	};
@@ -73,4 +73,4 @@ class Gamestate {
 	};
 };
 
-export { Gamestate };
+export { State };

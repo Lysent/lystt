@@ -1,4 +1,4 @@
-class GamestateClient {
+class StateClient {
 	map = {};
 	constructor() {
 
@@ -17,4 +17,4 @@ class GamestateClient {
 	};
 };
 
-export { GamestateClient };
+export { StateClient };

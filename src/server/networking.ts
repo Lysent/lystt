@@ -3,7 +3,7 @@ import { buf2hex } from "../utils.js";
 
 class NetworkServer {
 	clients: Map<string, Socket> = new Map();
-	players: Map<string, Object> = new Map();
+	players: Map<string, object> = new Map();
 	io: any;
 
 	constructor(port: number) {

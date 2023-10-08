@@ -7,8 +7,8 @@ function canAct(entity, { statkey, stat, statMax, statAct, statActCost, statActR
 
 	if (statAct !== 0 && entity2 !== null) { // acting on another
 		if (!inSquare(
-			this.gs.entityPositions(entity)[0],
-			this.gs.entityPositions(entity2)[0],
+			this.state.entityPositions(entity)[0],
+			this.state.entityPositions(entity2)[0],
 			statActRange
 		)) return { code: 4 }; // ERROR 4: Not in range
 
@@ -49,11 +49,11 @@ function canMove(entity, dest) {
 	if (entity === undefined) return { code: 6 }; // ERROR 6: No entity
 	if (entity.static === true) return { code: 5 }; // ERROR 5: Entity not allowed to move (static)
 
-	const ori = this.gs.entityPositions(entity)[0];
+	const ori = this.state.entityPositions(entity)[0];
 	const dist = Math.max(Math.abs(ori[0] - dest[0]), Math.abs(ori[1] - dest[1])); // square distance
 	const maxsteps = Math.floor(entity.AP / entity.moveCost); // amount of possible steps, based on available AP and movement cost
 
-	if (this.gs.tileOccupied(dest)) return { code: 1 }; // ERROR 1: Destination occupied
+	if (this.state.tileOccupied(dest)) return { code: 1 }; // ERROR 1: Destination occupied
 	if (maxsteps <= dist) return { code: 2 }; // ERROR 2: Not enough AP
 	if (dist >= 100) return { code: 3 }; // ERROR 3: Tried to move too far
 
@@ -82,7 +82,7 @@ function canMove(entity, dest) {
 		for (const [dx, dy] of directions) {
 			const newpos = [pos[0] + dx, pos[1] + dy];
 
-			if (this.gs.tileOccupied(newpos)) continue;
+			if (this.state.tileOccupied(newpos)) continue;
 
 			const newPositionStr = newpos.toString();
 

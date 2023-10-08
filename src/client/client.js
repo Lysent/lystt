@@ -1,11 +1,11 @@
 import { EventsClient } from "./events.js";
-import { GamestateClient } from "./gamestate.js";
+import { StateClient } from "./state.js";
 import { NetworkClient } from "./networking.js";
 
 class LysTClient {
 	constructor(serverurl, { name, key }) {
-		this.gs = new GamestateClient();
-		this.ev = new EventsClient(this.gs);
+		this.state = new StateClient();
+		this.ev = new EventsClient(this.state);
 		this.net = new NetworkClient(serverurl, {name, key});
 
 		this.net.io.on("data", data => this.ev.receive(data));
