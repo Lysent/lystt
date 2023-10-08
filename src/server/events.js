@@ -1,4 +1,4 @@
-import { canAct, canMove } from "../validate.js";
+import { canAct, canMove } from "../shared/validate.js";
 
 class Events {
 	constructor(state) {
