@@ -1,3 +1,4 @@
+// Entity / Tank from the original Tank Tactics prototype
 class Entity {
 	// AP
 	AP = 0
