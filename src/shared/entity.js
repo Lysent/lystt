@@ -36,3 +36,13 @@ class Entity {
 		this.team = owner;
 	}
 };
+
+class Summoner extends Entity {
+	procedures = {
+		spawn: {
+			cost: [5, "AP"],
+			check: () => true,
+			run: () => true
+		}
+	}
+}
