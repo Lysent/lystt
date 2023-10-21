@@ -89,12 +89,23 @@ class Events {
 	};
 
 	//
+	// Procedures
+	//
+	procedure(pos, procname, target = null){
+
+	};
+	procedureEntity(entity, procname, target = null){
+		// procedures flip the convention on its head: the *Entity wraps the positional.
+		const oriPos = this.state.entityPositions(entity)[0];
+		return this.procedure(oriPos, procname, target === null ? oriPos : target);
+	};
+
+	//
 	// Legalizers
 	//
 	deathHandler(entity) {
 		// current basic death handling: straight up delete it
 		this.state.removeEntity(entity);
-		// TODO: when procedures are added, remove dead entity procedures
 	};
 };
 

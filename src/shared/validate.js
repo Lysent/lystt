@@ -95,4 +95,8 @@ function canMove(entity, dest) {
 	return { code: 4 }; // ERROR 4: Path impossible in given steps
 };
 
-export { canAct, canMove };
+function canProcedure(entity, procedure){
+
+};
+
+export { canAct, canMove, canProcedure };

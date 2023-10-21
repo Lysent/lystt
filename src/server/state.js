@@ -30,7 +30,23 @@ class State {
 		const least = [Math.min(...occx), Math.min(...occy)];
 		const most = [Math.max(...occx), Math.max(...occy)];
 		return [least, most];
-	}
+	};
+
+	// procedures
+	autoProcsEntity(entity) {
+		const procs = entity.procedures || {};
+		return Object.keys(procs).filter(key => !!procs[key].automatic);
+	};
+	autoProcs(pos) {
+		return this.autoProcsEntity(this.map[pos]);
+	};
+	manualProcsEntity(entity) {
+		const procs = entity.procedures || {};
+		return Object.keys(procs).filter(key => !procs[key].automatic);
+	};
+	manualProcs(pos) {
+		return this.manualProcsEntity(this.map[pos]);
+	};
 
 	//
 	// mutation
