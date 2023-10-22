@@ -1,4 +1,4 @@
-import { canAct, canMove } from "../shared/validate.js";
+import { canAct, canMove, canProcedure } from "../shared/validate.js";
 
 class Events {
 	constructor(state) {
@@ -62,8 +62,8 @@ class Events {
 		const statSelfCost = entity[statkey + "SelfCost"] || 0;
 
 		const status = canAct.call(this, entity, { statkey, stat, statMax, statAct, statActCost, statActRange, statSelf, statSelfCost }, entity2);
-
 		if (status.code >= 0) return status.code;
+
 		switch (status.code) {
 			case -1: // Act success 1: modified self
 				this.state.mutstatEntity(entity, statkey, status.data.delta);
@@ -91,10 +91,22 @@ class Events {
 	//
 	// Procedures
 	//
-	procedure(pos, procname, target = null){
+	procedure(pos, procname, target = null, auto = false) {
+		const status = canProcedure.call(this, pos, procname, target, auto);
+		if (status.code > 0) return status.code; // ERRORs 1 to 4
 
+		const entity = this.state.map[pos];
+		const proc = entity.procedures[procname];
+		const ctx = status.ctx;
+		try {
+			proc.run.apply(proc, ctx);
+			this.state.mutstatEntity(entity, proc.cost[1], -proc.cost[0]);
+			return 0; // Success 0: Procedure ran
+		} catch (e) {
+			return 5; // ERROR 5: Procedure execution failed
+		}
 	};
-	procedureEntity(entity, procname, target = null){
+	procedureEntity(entity, procname, target = null) {
 		// procedures flip the convention on its head: the *Entity wraps the positional.
 		const oriPos = this.state.entityPositions(entity)[0];
 		return this.procedure(oriPos, procname, target === null ? oriPos : target);

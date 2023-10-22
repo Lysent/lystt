@@ -41,8 +41,10 @@ class Summoner extends Entity {
 	procedures = {
 		spawn: {
 			cost: [5, "AP"],
-			check: () => true,
-			run: () => true
+			condition: ({ pos, target }, ev, { inSquare }) =>
+				inSquare(pos, target, 5) && // in 5 tile range
+				!ev.state.tileOccupied(target), // not already occupied
+			run: ({ me, target }, ev) => ev.state.placeEntity(new Entity(me.team), target)
 		}
 	}
 }

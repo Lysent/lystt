@@ -1,4 +1,4 @@
-import { clamp, inSquare } from "./utils.js";
+import * as utils from "./utils.js";
 
 function canAct(entity, { statkey, stat, statMax, statAct, statActCost, statActRange, statSelf, statSelfCost }, entity2 = null) {
 
@@ -6,7 +6,7 @@ function canAct(entity, { statkey, stat, statMax, statAct, statActCost, statActR
 	if (typeof stat !== 'number') return { code: 1 }; // ERROR 1: Not possible
 
 	if (statAct !== 0 && entity2 !== null) { // acting on another
-		if (!inSquare(
+		if (!utils.inSquare(
 			this.state.entityPositions(entity)[0],
 			this.state.entityPositions(entity2)[0],
 			statActRange
@@ -17,7 +17,7 @@ function canAct(entity, { statkey, stat, statMax, statAct, statActCost, statActR
 		if (entity2[statkey] === undefined) return { code: 2 }; // ERROR 2: Trying to act on undefined stat
 		if (cost > entity[statActCost[1]]) return { code: 3 }; // ERROR 3: Not enough resources to act
 
-		const delta = clamp(
+		const delta = utils.clamp(
 			entity2[statkey] + statAct,
 			0,
 			entity2[statkey + "Max"] === -1 ? Infinity : entity2[statkey + "Max"]
@@ -34,7 +34,7 @@ function canAct(entity, { statkey, stat, statMax, statAct, statActCost, statActR
 		const cost = statSelfCost === 0 ? 0 : statSelfCost[0];
 		if (cost > entity[statSelfCost[1]]) return { code: 3 }; // ERROR 3: Not enough resources to act
 
-		const delta = clamp(stat - statSelf, 0, statMax === -1 ? Infinity : statMax);
+		const delta = utils.clamp(stat - statSelf, 0, statMax === -1 ? Infinity : statMax);
 		if (delta === 0) return { code: 0 }; // Act success 0: no change
 
 		return {
@@ -95,8 +95,19 @@ function canMove(entity, dest) {
 	return { code: 4 }; // ERROR 4: Path impossible in given steps
 };
 
-function canProcedure(entity, procedure){
+function canProcedure(pos, procname, target, auto) {
+	const entity = this.state.map[pos];
+	if (!entity) return { code: 4 }; // ERROR 4: No entity
 
+	const proc = entity.procedures[procname];
+	if (!proc) return { code: 1 }; // ERROR 1: Procedure does not exist
+	if (!auto && proc.auto) return { code: 2 }; // ERROR 2: Can't manually run automatic procedure
+
+	const ctx = [{ me: entity, pos, target }, this, utils];
+	const result = proc.condition.apply(proc, ctx);
+	if (!result) return { code: 3 }; // ERROR 3: Procedure condition returned false
+
+	if (result) return { code: 0, ctx }; // Success 0: Procedure condition passed
 };
 
 export { canAct, canMove, canProcedure };
