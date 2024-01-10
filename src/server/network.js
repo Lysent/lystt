@@ -1,10 +1,10 @@
-import { Server } from 'ws';
+import { WebSocketServer } from 'ws';
 
 class NetworkWS {
 	constructor(port) {
 		this.port = port;
 		this.clients = new Set();
-		this.server = new Server({ port });
+		this.server = new WebSocketServer({ port });
 
 		this.server.on('listening', () => {
 			console.log(`WebSocket server is listening on port ${port}`);
