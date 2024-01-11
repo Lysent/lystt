@@ -9,5 +9,7 @@ const options = {
 }
 
 const game = new LysTServer(options);
+process.game = game;
 
+// no fatality
 process.on('uncaughtException', e => console.error(e));
