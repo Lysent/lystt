@@ -4,7 +4,6 @@ import { NetworkWS } from "./network.js";
 import { Players } from "./playerstate.js";
 import { Ticker } from "./tick.js";
 
-
 class LysTServer {
 	constructor(opts) {
 		const { port, content, tickrate } = opts;
@@ -20,6 +19,13 @@ class LysTServer {
 		this.tick = tick;
 		this.messages = msgs;
 		this.networking = net;
+
+		tick.start();
+	}
+
+	stop(){
+		this.tick.stop();
+		this.networking.close();
 	}
 }
 
