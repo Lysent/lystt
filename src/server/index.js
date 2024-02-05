@@ -4,28 +4,24 @@ import { NetworkWS } from "./network.js";
 import { Players } from "./playerstate.js";
 import { Ticker } from "./tick.js";
 
-class LysTServer {
-	constructor(opts) {
-		const { port, content, tickrate } = opts;
+const LysTServer = function (opts) {
+	const { port, content, tickrate } = opts;
 
-		const players = new Players();
-		const state = new Gamestate(content, players);
-		const tick = new Ticker(state, tickrate);
-		const msgs = new Messages(tick);
-		const net = new NetworkWS(port, msgs);
+	const players = new Players();
+	const state = new Gamestate(content, players);
+	const tick = new Ticker(state, tickrate || 20);
+	const msgs = new Messages(tick);
+	const net = new NetworkWS(port, msgs);
 
-		this.players = players;
-		this.state = state;
-		this.tick = tick;
-		this.messages = msgs;
-		this.networking = net;
-
-		tick.start();
-	}
-
-	stop(){
+	const stop = function() {
 		this.tick.stop();
 		this.networking.close();
+	}
+	tick.start();
+
+	return {
+		players, state, tick, msgs, net,
+		stop
 	}
 }
 
