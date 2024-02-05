@@ -3,7 +3,7 @@
   "type": "module",
   "main": "",
   "scripts": {
-    "dev": "node --inspect src/server.js"
+    "dev": "nodemon --inspect src/server.js"
   },
   "repository": {
     "type": "git",
