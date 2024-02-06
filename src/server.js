@@ -1,10 +1,10 @@
 import { LysTServer } from "./server/index.js";
-import { types } from "./shared/types.js";
+import { content } from "./shared/content.js";
 
 const options = {
 	port: 3000,
 	content: {
-		lystt: types
+		lystt: content
 	}
 }
 
