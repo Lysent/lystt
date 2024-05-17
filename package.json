@@ -1,0 +1,21 @@
+{
+  "name": "lystt",
+  "type": "module",
+  "main": "",
+  "scripts": {
+    "dev": "nodemon --inspect src/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lysent/lystt.git"
+  },
+  "author": "tikup",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Lysent/lystt/issues"
+  },
+  "homepage": "https://github.com/Lysent/lystt#readme",
+  "dependencies": {
+    "ws": "^8.16.0"
+  }
+}

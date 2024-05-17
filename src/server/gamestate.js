@@ -1,76 +1,69 @@
-class Gamestate {
-	constructor(map) {
-		this.map = map;
-	};
+import * as types from "../shared/types";
 
-	//
-	// math n stuff
-	//
-	rel = ([x, y], [rx, ry]) => [x + rx, y + ry];
+const Gamestate = function (content, players) {
+	const maps = {};
 
-	//
-	// observation
-	//
-	entities() {
-		return [...new Set(Object.values(this.map))];
-	};
-	tileOccupied(coords) {
-		return Boolean(this.map[coords]);
-	};
-	entityPositions(entity) {
-		return Object.keys(this.map)
-			.filter(key => this.map[key] === entity)
-			.map(k => JSON.parse(`[${k}]`));
-		// since our keys are arrays, they get stringified, so we need to make them arrays again
-	};
-	bounds() { // find minimum bounds of map
-		const occupied = Object.keys(this.map).map(k => JSON.parse(`[${k}]`));
-		const occx = occupied.map(c => c[0]);
-		const occy = occupied.map(c => c[1]);
-		const least = [Math.min(...occx), Math.min(...occy)];
-		const most = [Math.max(...occx), Math.max(...occy)];
-		return [least, most];
+	const createMap = opts => {
+		if (opts.name in maps) return;
+		const map = {
+			size: opts.size || 100,
+			name: opts.name,
+			entities: [],
+			scheduled: []
+
+			// binding methods
+		}
+		maps[map.name] = map;
+		return map;
 	}
 
-	//
-	// mutation
-	//
-	placeEntity(entity, position) {
-		this.map[position] = entity;
-		// TODO expand for multitile (one day)
-	};
+	// observing
 
-	removeEntity(entity) {
-		for (const pos of this.entityPositions(entity)) { // This is parity for eventual multitile entities.
-			delete this.map[pos];
-		};
-	};
-	remove(pos) {
-		return this.removeEntity(this.map[pos]);
-	};
+	const entities = mapname => mapname in maps ? maps[mapname].entities : [];
+	const events = mapname => mapname in maps ? maps[mapname].scheduled : [];
 
-	// teleport without place check
-	tpEntity(entity, dest) {
-		this.removeEntity(entity);
-		this.placeEntity(entity, dest);
-	};
-	tp(ori, dest) {
-		return this.tpEntity(this.map[ori], dest);
-	};
+	const at = (mapname, { x, y }) => entities(mapname).filter(e => e.x == x && e.y == y);
 
-	// stats
-	setstatEntity(entity, key, value) {
-		return entity[key] = value;
-	};
-	setstat(pos, key, value) {
-		return this.setstatEntity(this.map[pos], key, value);
-	};
-	mutstatEntity(entity, key, amount) {
-		return this.setstatEntity(entity, key, entity[key] + amount);
-	};
-	mutstat(pos, key, amount) {
-		return this.mutstatEntity(this.map[pos], key, amount);
-	};
-};
+	const eventsAt = (mapname, { x, y }) => entities(mapname).filter(e => e.x == x && e.y == y);
+
+	// mutating
+
+	const createEntity = (type) => {
+		return {
+			type,
+			x: NaN,
+			y: NaN,
+		}
+	}
+
+	const schedule = (mapname, [type, target, content]) => {
+		if (!mapname in maps) return;
+		maps[mapname].scheduled.push()
+	}
+
+	const move = (entity, mapname, { x, y }) => {
+		if (entity.map != maps[mapname]) entity.map = maps[mapname];
+		entity.x = x;
+		entity.y = y;
+	}
+
+	// The Resolver (commits all changes to the diff)
+
+	const handlers = {
+
+	}
+	const resolve = (mapname) => {
+		if (!mapname in this.maps) return;
+	}
+
+
+
+	return {
+		maps, createMap,
+		at, eventsAt, entities, events,
+		createEntity, schedule, move,
+		handlers, resolve
+	}
+}
 
 export { Gamestate };
