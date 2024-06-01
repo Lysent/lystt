@@ -1,6 +1,7 @@
 const defaultStats = [
-	['health', 0, 100, 50],
-	['stamina', 0, 50, 30],
+	// name, value, min, max
+	['health', 0, 0, 5],
+	['ap', 0, 0, 100],
 	// more stats...
 ];
 
@@ -15,10 +16,7 @@ const _initialize = (stats) => {
 	return [statsArray, statsIndex];
 };
 
-const _clampValue = (value, min, max) => {
-
-	return Math.min(Math.max(value, min), max);
-};
+const _clampValue = (value, min, max) => Math.min(Math.max(value, min), max);
 
 const _get = (statsArray, statsIndex, name) => {
 	const index = statsIndex[name];
