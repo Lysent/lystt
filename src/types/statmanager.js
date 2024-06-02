@@ -30,16 +30,18 @@ const _get = (statsArray, statsIndex, name) => {
 	return null;
 };
 
-const _getValue = (statsArray, statsIndex, name) => {
+const _getRaw = (statsArray, statsIndex, name) => {
 	const index = statsIndex[name];
-	if (index !== undefined) {
-		return statsArray[index][3];
-	}
-	return null;
+	return index !== undefined ? statsArray[index] : null;
+}
+
+const _getValue = (statsArray, statsIndex, name) => {
+	const entry = _getRaw(statsArray, statsIndex, name);
+	return entry !== null ? entry[1] : null;
 };
 
 const __modifyStat = (statsArray, index, newValue) => {
-	if(isNaN(Number(newValue))) return statsArray[index][3];
+	if (isNaN(Number(newValue))) return statsArray[index][3];
 	statsArray[index][3] = _clampValue(newValue, statsArray[index][1], statsArray[index][2]);
 	return statsArray[index][3];
 };
@@ -65,34 +67,28 @@ const statsManager = (initialStats) => {
 	let statsArray;
 	let statsIndex = {};
 
-	const initialize = (stats) => {
-		[statsArray, statsIndex] = _initialize(stats);
-	};
+	const initialize = (stats) => [statsArray, statsIndex] = _initialize(stats);
 
 	// Initialize with provided stats or default stats
 	initialize(initialStats || defaultStats);
 
 	// Public API
 	const get = (name) => _get(statsArray, statsIndex, name);
+	const getRaw = (name) => _getRaw(statsArray, statsIndex, name);
 	const getValue = (name) => _getValue(statsArray, statsIndex, name);
 	const set = (name, newValue) => _set(statsArray, statsIndex, name, newValue);
 	const mutate = (name, amount) => _mutate(statsArray, statsIndex, name, amount);
-	const getStatsArray = () => statsArray;
 
 	const serialize = () => JSON.stringify(statsArray);
-	const deserialize = (jsonString) => {
-		const parsedStats = JSON.parse(jsonString);
-		initialize(parsedStats);
-	};
+	const deserialize = (jsonString) => initialize(JSON.parse(jsonString));
 
 	return {
-		get,
-		getValue,
-		set,
-		mutate,
-		getStatsArray,
-		serialize,
-		deserialize
+		get, getRaw, getValue,
+		set, mutate,
+		serialize, deserialize,
+
+		get statsArray() { return statsArray; },
+		get statsIndex() { return statsIndex; }
 	};
 };
 
