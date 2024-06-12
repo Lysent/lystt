@@ -1,5 +1,6 @@
 .vscode
 bun.lockb
+tests
 
 logs
 *.log
