@@ -1,4 +1,4 @@
-// Helper functions for rotation
+// helper functions
 const _rectifyRotation = (rotation) => {
 	return ((rotation % 400) + 400) % 400;
 };
@@ -9,111 +9,170 @@ const _snapRotation = (rotation) => {
 	return nearest % 400;
 };
 
-// Helper function to validate position and velocity
 const _validateVector = (vector) => {
 	if (Array.isArray(vector) && vector.length === 2) {
 		const [x, y] = vector.map(Number);
-		if (!isNaN(x) && x > 0 && !isNaN(y) && y > 0) {
+		if (!isNaN(x) && !isNaN(y)) {
 			return [x, y];
 		}
 	}
 	return [0, 0];
 };
 
-
-// Free entity physical properties manager factory function
-const entityPhysicalPropsManager = (initialProperties = {}) => {
-	let position = _validateVector(initialProperties.position);
-	let velocity = _validateVector(initialProperties.velocity);
-	let rotation = _rectifyRotation(initialProperties.rotation || 0);
-	let size = Number(initialProperties.size) || 0;
-
-	const getPosition = () => position;
-	const setPosition = (newPosition) => { position = _validateVector(newPosition); };
-	const getPositionObject = () => ({ x: position[0], y: position[1] });
-
-	const getVelocity = () => velocity;
-	const setVelocity = (newVelocity) => { velocity = _validateVector(newVelocity); };
-	const getVelocityObject = () => ({ vx: velocity[0], vy: velocity[1] });
-
-	const getRotation = () => rotation;
-	const setRotation = (newRotation) => { rotation = _rectifyRotation(newRotation); };
-
-	const getSize = () => size;
-	const setSize = (newSize) => { size = Number(newSize) || 0; };
-
-	const serialize = () => JSON.stringify({ position, velocity, rotation, size });
-	const deserialize = (jsonString) => {
-		const { position, velocity, rotation, size } = JSON.parse(jsonString);
-		setPosition(position);
-		setVelocity(velocity);
-		setRotation(rotation);
-		setSize(size);
-	};
-
-	return {
-		getPosition,
-		setPosition,
-		getPositionObject,
-		getVelocity,
-		setVelocity,
-		getVelocityObject,
-		getRotation,
-		setRotation,
-		getSize,
-		setSize,
-		serialize,
-		deserialize
-	};
+const _validateVector3D = (vector) => {
+	if (Array.isArray(vector) && vector.length === 3) {
+		const [x, y, z] = vector.map(Number);
+		if (!isNaN(x) && !isNaN(y) && !isNaN(z)) {
+			return [x, y, z];
+		}
+	}
+	return [0, 0, 0];
 };
 
-// Tile entity physical properties manager factory function
-const tileEntityPhysicalPropsManager = (initialProperties = {}) => {
-	let position = _validateVector(initialProperties.position);
-	let velocity = _validateVector(initialProperties.velocity);
-	let rotation = _snapRotation(initialProperties.rotation || 0);
-	let size = Number(initialProperties.size) || 0;
+// physical properties for tile entities, or blocks
+const tilePhysical = (initialData = [[0, 0], [0, 0], 1, 0]) => {
+	let [position, velocity, size, rotation] = initialData;
+	position = _validateVector(position);
+	velocity = _validateVector(velocity);
+	rotation = _snapRotation(rotation);
 
-	const getPosition = () => position;
-	const setPosition = (newPosition) => { position = _validateVector(newPosition); };
-	const getPositionObject = () => ({ x: position[0], y: position[1] });
+	const setPos = ([x, y]) => { position = _validateVector([x, y]); };
+	const getPos = () => position;
+	const setPosObject = ({ x, y }) => { position = _validateVector([x, y]); };
+	const getPosObject = () => ({ x: position[0], y: position[1] });
 
-	const getVelocity = () => velocity;
-	const setVelocity = (newVelocity) => { velocity = _validateVector(newVelocity); };
-	const getVelocityObject = () => ({ vx: velocity[0], vy: velocity[1] });
+	const setVel = ([vx, vy]) => { velocity = _validateVector([vx, vy]); };
+	const getVel = () => velocity;
+	const setVelObject = ({ vx, vy }) => { velocity = _validateVector([vx, vy]); };
+	const getVelObject = () => ({ vx: velocity[0], vy: velocity[1] });
+
+	const getSize = () => size;
+	const setSize = (newSize) => { size = newSize; };
 
 	const getRotation = () => rotation;
 	const setRotation = (newRotation) => { rotation = _snapRotation(newRotation); };
 
-	const getSize = () => size;
-	const setSize = (newSize) => { size = Number(newSize) || 0; };
+	const raw = () => [position, velocity, size, rotation];
 
-	const serialize = () => JSON.stringify({ position, velocity, rotation, size });
-	const deserialize = (jsonString) => {
-		const { position, velocity, rotation, size } = JSON.parse(jsonString);
-		setPosition(position);
-		setVelocity(velocity);
-		setRotation(rotation);
-		setSize(size);
+	const applyVelocity = () => {
+		position[0] += velocity[0];
+		position[1] += velocity[1];
+	};
+
+	const applyFriction = () => {
+		velocity = [0, 0];
+	};
+
+	const tick = () => {
+		applyVelocity();
+		applyFriction();
 	};
 
 	return {
-		getPosition,
-		setPosition,
-		getPositionObject,
-		getVelocity,
-		setVelocity,
-		getVelocityObject,
-		getRotation,
-		setRotation,
+		setPos,
+		getPos,
+		setPosObject,
+		getPosObject,
+		setVel,
+		getVel,
+		setVelObject,
+		getVelObject,
 		getSize,
 		setSize,
-		serialize,
-		deserialize
+		getRotation,
+		setRotation,
+		raw,
+		applyVelocity,
+		applyFriction,
+		tick,
+
+		type: "physical:tile"
 	};
 };
 
-export {
-	entityPhysicalPropsManager,
-	tileEntityPhysicalPropsManager
+// physical properties for free entities, or pods
+const freePhysical = (initialData = [[0, 0, 0], [0, 0, 0], 1, 0.99, 0.1, 100, 0]) => {
+	let [position, velocity, size, friction, gravity, life, rotation] = initialData;
+	position = _validateVector3D(position);
+	velocity = _validateVector3D(velocity);
+	rotation = _rectifyRotation(rotation);
+
+	const setPos = ([x, y, z]) => { position = _validateVector3D([x, y, z]); };
+	const getPos = () => position;
+	const setPosObject = ({ x, y, z }) => { position = _validateVector3D([x, y, z]); };
+	const getPosObject = () => ({ x: position[0], y: position[1], z: position[2] });
+
+	const setVel = ([vx, vy, vz]) => { velocity = _validateVector3D([vx, vy, vz]); };
+	const getVel = () => velocity;
+	const setVelObject = ({ vx, vy, vz }) => { velocity = _validateVector3D([vx, vy, vz]); };
+	const getVelObject = () => ({ vx: velocity[0], vy: velocity[1], vz: velocity[2] });
+
+	const getSize = () => size;
+	const setSize = (newSize) => { size = newSize; };
+
+	const getFriction = () => friction;
+	const setFriction = (newFriction) => { friction = newFriction; };
+
+	const getGrav = () => gravity;
+	const setGrav = (newGravity) => { gravity = newGravity; };
+
+	const getLife = () => life;
+	const setLife = (newLife) => { life = newLife; };
+
+	const getRotation = () => rotation;
+	const setRotation = (newRotation) => { rotation = _rectifyRotation(newRotation); };
+
+	const raw = () => [position, velocity, size, friction, gravity, life, rotation];
+
+	const applyVelocity = () => {
+		position[0] += velocity[0];
+		position[1] += velocity[1];
+		position[2] += velocity[2];
+	};
+
+	const applyGravity = () => {
+		velocity[1] -= gravity; // Assuming gravity affects the y-axis
+	};
+
+	const applyFriction = () => {
+		velocity = velocity.map(v => v * friction);
+	};
+
+	const tick = () => {
+		if (life <= 0) return;
+		life -= 1;
+		applyGravity();
+		applyVelocity();
+		applyFriction();
+	};
+
+	return {
+		setPos,
+		getPos,
+		setPosObject,
+		getPosObject,
+		setVel,
+		getVel,
+		setVelObject,
+		getVelObject,
+		getSize,
+		setSize,
+		getFriction,
+		setFriction,
+		getGrav,
+		setGrav,
+		getLife,
+		setLife,
+		getRotation,
+		setRotation,
+		raw,
+		applyVelocity,
+		applyGravity,
+		applyFriction,
+		tick,
+
+		type: "physical:free"
+	};
 };
+
+export { tilePhysical, freePhysical };
