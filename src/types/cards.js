@@ -48,7 +48,7 @@ const _add = (hiddenDeck, normalDeck, size, card, hidden) => {
 		}
 		return false;
 	}
-}
+};
 
 const _remove = (deck, cardOrIndex) => {
 	let card;
@@ -63,19 +63,152 @@ const _remove = (deck, cardOrIndex) => {
 		}
 	}
 	return card || false;
+};
+
+const _rebuildStats = (decks) => {
+	const cache = [];
+	const addToCache = (deck) => {
+		for (const card of deck) {
+			if (card) {
+				const stats = card.getStats();
+				for (const stat of stats) {
+					cache.push(stat);
+				}
+			}
+		}
+	};
+	decks.forEach(deck => addToCache(deck));
+	return cache;
+};
+
+const _rebuildProcs = (decks) => {
+	const cache = {};
+	// const procNames = new Set();
+	const addToCache = (deck) => {
+		for (const card of deck) {
+			if (card) {
+				const procs = card.getProcs();
+				for (const proc of procs) {
+					cache[proc[0]] = proc;
+					// if (!procNames.has(proc[0])) {
+					// 	cache.push(proc);
+					// 	procNames.add(proc[0]);
+					// }
+				}
+			}
+		}
+	};
+	decks.forEach(deck => addToCache(deck));
+	return cache;
+};
+
+const _rebuildHandlers = (decks) => {
+	const cache = [];
+	const addToCache = (deck) => {
+		for (const card of deck) {
+			if (card) {
+				const handlers = card.getHandlers();
+				for (const handler of handlers) {
+					cache.push(handler);
+				}
+			}
+		}
+	};
+	decks.forEach(deck => addToCache(deck));
+	return cache;
+};
+
+const _groupNamedArrays = (arr) => {
+	const result = [];
+	const map = new Map();
+
+	arr.forEach(subArray => {
+		const key = subArray[0];
+		if (!map.has(key)) {
+			map.set(key, []);
+		}
+		map.get(key).push(subArray);
+	});
+
+	map.forEach((value, key) => {
+		result.push([key, value]);
+	});
+
+	return result;
+};
+
+const _applyStat = (name, compiled, statsManager) => {
+	console.log(name, compiled);
+	const apply = (s, mods) => mods.reduce((n, f) => n = f(n), s);
+
+	let entry = statsManager.getEntry(name);
+	if (entry === null) entry = [name, null, null, null];
+
+	const nums = entry.slice(1);
+
+	for (const [i, mods] of compiled.entries()) {
+		nums[i] = apply(nums[i], mods);
+	}
+
+	statsManager.add([name, ...nums]);
 }
 
-const _applyOperation = (opMin, opMax, opValue) => {
-	switch (opMin[0]) {
-		case 'set':
-			return opValue[1];
-		case 'add':
-			return opMin[1] + opMax[1] + opValue[1];
-		case 'multiply':
-			return opMin[1] * opMax[1] * opValue[1];
-		default:
-			return opValue[1];
+const _applyStats = (stats, statsManager) => {
+	const statgroups = _groupNamedArrays(stats);
+	for (const statstack of statgroups) {
+		const name = statstack[0];
+		const base = [-1, -1, -1];
+		const compiled = [[], [], []];
+		for (const [i, stat] of statstack[1].entries()) {
+			for (const [j, v] of stat.slice(1).entries()) {
+				if (v === null) {
+					compiled[i].push(n => n);
+					break;
+				}
+
+				const [op, amount] = v;
+				switch (op) {
+					case "ifset":
+						compiled[j].push(n => n === null ? (n = amount) : null)
+						base[j] = i;
+						break;
+					case "set":
+						compiled[j].push(n => n = amount)
+						base[j] = i;
+						break;
+					case "add":
+						if (base[j] === -1) break;
+						compiled[j].push(n => n === null ? n : (n + amount))
+						break;
+					case "mult":
+						if (base[j] === -1) break;
+						compiled[j].push(n => n === null ? n : Math.floor(n * amount))
+						break;
+				}
+			}
+		}
+
+		_applyStat(name, compiled, statsManager);
 	}
+};
+
+const _proc = (procs, name) => {
+	const procedure = procs.find(proc => proc[0] === name);
+	if (procedure) {
+		const [procName, procFunction, parameters] = procedure;
+		return {
+			run: (...extraArgs) => procFunction(parameters, ...extraArgs),
+			set: (paramName, value) => {
+				const param = parameters.find(param => param[0] === paramName);
+				if (param) param[2] = value;
+			},
+			get: (paramName) => {
+				const param = parameters.find(param => param[0] === paramName);
+				return param ? param[2] : undefined;
+			}
+		};
+	}
+	return null;
 };
 
 // cards manager factory function
@@ -85,7 +218,7 @@ const cardsManager = (initialSize = 10) => {
 	let hiddenDeck = [];
 	let ejectedDeck = [];
 	let statCache = [];
-	let procCache = [];
+	let procCache = {};
 	let handlerCache = [];
 
 	const add = (card, hidden = false) => {
@@ -102,7 +235,7 @@ const cardsManager = (initialSize = 10) => {
 
 	const getSize = () => normalDeck.length;
 	const setSize = (newSize) => {
-		if(newSize === size) return size;
+		if (newSize === size) return size;
 		if (newSize < normalDeck.length) {
 			const overflow = normalDeck.slice(newSize).filter(card => card !== null);
 			ejectedDeck.push(...overflow);
@@ -124,57 +257,11 @@ const cardsManager = (initialSize = 10) => {
 	const getHidden = () => hiddenDeck;
 	const getDeck = () => normalDeck;
 
-	const rebuildStats = () => {
-		statCache = [];
-		const addToCache = (deck) => {
-			for (const card of deck) {
-				if (card) {
-					const stats = card.getStats();
-					for (const stat of stats) {
-						statCache.push(stat);
-					}
-				}
-			}
-		};
-		addToCache(hiddenDeck);
-		addToCache(normalDeck);
-	};
+	const rebuildStats = () => { statCache = _rebuildStats([hiddenDeck, normalDeck]) };
 
-	const rebuildProcs = () => {
-		procCache = [];
-		const procNames = new Set();
-		const addToCache = (deck) => {
-			for (const card of deck) {
-				if (card) {
-					const procs = card.getProcs();
-					for (const proc of procs) {
-						if (!procNames.has(proc[0])) {
-							procCache.push(proc);
-							procNames.add(proc[0]);
-						}
-					}
-				}
-			}
-		};
-		addToCache(hiddenDeck);
-		addToCache(normalDeck);
-	};
+	const rebuildProcs = () => { procCache = _rebuildProcs([hiddenDeck, normalDeck]) };
 
-	const rebuildHandlers = () => {
-		handlerCache = [];
-		const addToCache = (deck) => {
-			for (const card of deck) {
-				if (card) {
-					const handlers = card.getHandlers();
-					for (const handler of handlers) {
-						handlerCache.push(handler);
-					}
-				}
-			}
-		};
-		addToCache(hiddenDeck);
-		addToCache(normalDeck);
-	};
+	const rebuildHandlers = () => { handlerCache = _rebuildHandlers([hiddenDeck, normalDeck]) };
 
 	const rebuild = () => {
 		rebuildStats();
@@ -182,18 +269,7 @@ const cardsManager = (initialSize = 10) => {
 		rebuildHandlers();
 	};
 
-	const applyStats = (statsManager) => {
-
-		// TODOOOOO
-
-		for (const [name, [opMin], [opMax], [opValue]] of statCache) {
-			if (opMin && opMax && opValue) {
-				statsManager.set(name, _applyOperation(opMin, opMax, opValue));
-			} else {
-				statsManager.remove(name);
-			}
-		}
-	};
+	const applyStats = (statsManager) => _applyStats(statCache, statsManager);
 
 	const handle = (name, event) => {
 		for (const [eventName, handler] of handlerCache) {
@@ -203,24 +279,7 @@ const cardsManager = (initialSize = 10) => {
 		}
 	};
 
-	const proc = (name) => {
-		const procedure = procCache.find(proc => proc[0] === name);
-		if (procedure) {
-			const [procName, procFunction, parameters] = procedure;
-			return {
-				run: (...extraArgs) => procFunction(parameters, ...extraArgs),
-				set: (paramName, value) => {
-					const param = parameters.find(param => param[0] === paramName);
-					if (param) param[2] = value;
-				},
-				get: (paramName) => {
-					const param = parameters.find(param => param[0] === paramName);
-					return param ? param[2] : undefined;
-				}
-			};
-		}
-		return null;
-	};
+	const proc = (name) => _proc(procCache, name);
 
 	const raw = () => ({
 		normalDeck,
